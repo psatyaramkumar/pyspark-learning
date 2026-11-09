@@ -791,8 +791,8 @@ def run_demo_without_errors():
                 print(f"Error in {name}: {str(e)[:100]}...")
                 print("Continuing with next part...")
             
-            if i < len(parts_to_run):
-                input(f"\nPress Enter to continue to Part {i+1}...")
+            # if i < len(parts_to_run):
+            #     input(f"\nPress Enter to continue to Part {i+1}...")
         
         print("\n" + "="*80)
         print("DEMO COMPLETED SUCCESSFULLY!")
