@@ -47,10 +47,9 @@ jobs:
                 python3 -m pip install pyspark
             - name: Checkout Git Repository
               uses: actions/checkout@v3
-              
+
             
             - name: Execute the PySpark Program
-              shell: python3
               run: |
                 python3 ${{inputs.program}}
             
