@@ -1,11 +1,12 @@
 name: Program Execution Workflow
+run-name: Program Execution ${{ github.event.inputs.program }}
 on:
     workflow_dispatch:
         inputs:
             program:
                 description: 'Program to execute'
                 required: true
-                default: 'default_program.py'
+                default: 'main.py'
                 type: string
 jobs:
     execute_program:
@@ -16,10 +17,10 @@ jobs:
               run: |
                 if command -v pyspark >/dev/null 2>&1; then
                     echo "pyspark is installed"
-                    echo "pyspark_intalled=true" >> $GITHUB_OUTPUT
+                    echo "pyspark_installed=true" >> $GITHUB_OUTPUT
                 else
                     echo "pyspark is not installed"
-                    echo "pyspark_intalled=false" >> $GITHUB_OUTPUT
+                    echo "pyspark_installed=false" >> $GITHUB_OUTPUT
                 fi
                 if command -v java >/dev/null 2>&1; then
                     echo "java is installed"
@@ -36,7 +37,7 @@ jobs:
                   distribution: temurin
                   version: "17"
             - name: Install Python if not installed
-              if: steps.check_libs.outputs.pyspark_intalled == 'false'
+              if: steps.check_libs.outputs.pyspark_installed == 'false'
               uses: actions/setup-python@v5
               with:
                   python-version: "3.12"
@@ -51,7 +52,24 @@ jobs:
             
             - name: Execute the PySpark Program
               run: |
-                python3 ${{inputs.program}}
+                mkdir -p output
+                python3 ${{ github.event.inputs.program }} 2>&1 | tee output/result.txt
+            - name: Display the Output
+              if: always()
+              run: |
+                echo "Program Output:" >> GITHUB_STEP_SUMMARY
+                echo "--------------------" >> GITHUB_STEP_SUMMARY
+                echo "```" >> GITHUB_STEP_SUMMARY
+                cat output/result.txt >> GITHUB_STEP_SUMMARY
+                echo "```" >> GITHUB_STEP_SUMMARY
+                echo "Completed" >> GITHUB_STEP_SUMMARY
+            - name: Store Artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                  name: program-output
+                  path: output/
+                  retention-days: 5
+
             
                   
 
