@@ -1,0 +1,58 @@
+name: Program Execution Workflow
+on:
+    workflow_dispatch:
+        inputs:
+            program:
+                description: 'Program to execute'
+                required: true
+                default: 'default_program.py'
+                type: string
+jobs:
+    execute_program:
+        runs-on: ubuntu-latest
+        steps:
+            - name: check pyspark and java isntalled / not
+              id: check_libs
+              run: |
+                if command -v pyspark >/dev/null 2>&1; then
+                    echo "pyspark is installed"
+                    echo "pyspark_intalled=true" >> $GITHUB_OUTPUT
+                else
+                    echo "pyspark is not installed"
+                    echo "pyspark_intalled=false" >> $GITHUB_OUTPUT
+                fi
+                if command -v java >/dev/null 2>&1; then
+                    echo "java is installed"
+                    echo "java_installed=true" >> $GITHUB_OUTPUT
+                else
+                    echo "java is not installed"
+                    echo "java_installed=false" >> $GITHUB_OUTPUT
+                fi
+                
+            - name: Install Java if not Installed
+              if: steps.check_libs.outputs.java_installed == 'false'
+              uses: actions/setup-java@v4
+              with:
+                  distribution: temurin
+                  version: "17"
+            - name: Install Python if not installed
+              if: steps.check_libs.outputs.pyspark_intalled == 'false'
+              uses: actions/setup-python@v5
+              with:
+                  python-version: "3.12"
+                  
+            - name: Install Pyspark
+              shell: python
+              run: |
+                python -m pip install --upgrade pip
+                python -m pip install pyspark
+            
+            - name: Execute the PySpark Program
+              shell: python
+              run: |
+                python ${{inputs.program}}
+            
+                  
+
+            
+                
